@@ -34,8 +34,8 @@ public class APVisual
 		//Mathematical
 			public static final double PHI = 1.6180339887;
 		//Meta
-			public static final String OUTPUT_FOLDER = "D:\\Code\\Charters Card Generator\\Charters Card Outputs";
-			public static final String INPUT_FOLDER = "D:\\Code\\Charters Card Generator\\Charters Card Inputs";
+			public static final String INPUT_FOLDER = "in";
+			public static final String OUTPUT_FOLDER = "out";
 			public static final String IMAGE_EXTENSION = ".svg";
 			public static final String CARDS_EXTENSION = "_cards.json";
 		//Image-Specfic
@@ -95,6 +95,7 @@ public class APVisual
 					DirectoryStream<Path> files = Files.newDirectoryStream(inputFolder);
 					for (Path p : files)
 					{
+						System.out.println("File: " + p);
 						if (p.getFileName().toString().endsWith(CARDS_EXTENSION))
 						{
 							System.out.println("Found design file: " + p.getFileName());
@@ -259,88 +260,6 @@ public class APVisual
 				}
 				modifierRow.draw(pen, 0, critHeight);
 				
-				
-				/*
-				//Grab modifier information
-				pen.setFont(MODIFIER_FONT);
-				String completeModifier = "";
-				for (String s : cardObj.modifiers)
-				{
-					completeModifier = completeModifier + s;
-				}
-				int modifiersWidth = pen.getFontMetrics(CRITICAL_FONT).stringWidth(completeModifier);
-				
-				//Modifier row
-				Area modifierRow = new Area(new Rectangle2D.Double
-				(
-						0,
-						py(CRITICAL_ROW_HEIGHT),
-						px(1), 
-						py(MODIFIER_ROW_HEIGHT)
-				));
-				modifierRow.intersect(mainArea);
-				pen.setPaint(Color.WHITE);
-				pen.fill(modifierRow);
-				pen.setPaint(Color.BLACK);
-				pen.draw(modifierRow);
-				
-				//Content row
-				Area contentRow = new Area(new Rectangle2D.Double
-				(
-						0,
-						py(CRITICAL_ROW_HEIGHT + MODIFIER_ROW_HEIGHT),
-						px(1), 
-						py(1 - MODIFIER_ROW_HEIGHT - CRITICAL_ROW_HEIGHT)
-				));
-				contentRow.intersect(mainArea);
-				pen.setPaint(Color.WHITE);
-				pen.fill(contentRow);
-				pen.setPaint(Color.BLACK);
-				pen.draw(contentRow);
-				
-				//Get font height
-				int nameHeight = pen.getFontMetrics(CRITICAL_FONT).getAscent() - pen.getFontMetrics(CRITICAL_FONT).getLeading();
-				System.out.println("nameHeight: " + nameHeight);
-				
-				//Draw name
-				pen.setFont(CRITICAL_FONT);
-				pen.drawString
-				(
-						cardObj.name,
-						0 + px(0 + CRITICAL_PADDING_X),
-						0 + py(CRITICAL_ROW_HEIGHT - CRITICAL_PADDING_Y)
-				);
-				
-				//Draw cost
-				if (cardObj.cost != null)
-				{
-					pen.setFont(CRITICAL_FONT);
-					int costWidth = pen.getFontMetrics(CRITICAL_FONT).stringWidth(cardObj.cost);
-					pen.drawString
-					(
-							cardObj.cost,
-							0 + (MAX_AP_WIDTH - costWidth - px(CRITICAL_PADDING_X)),
-							0 + py(CRITICAL_ROW_HEIGHT - CRITICAL_PADDING_Y)
-					);
-				}
-				
-				//Draw modifier text
-				pen.drawString
-				(
-						completeModifier,
-						0 + (MAX_AP_WIDTH - modifiersWidth - px(0 + MODIFIER_PADDING_X)),
-						0 + py(CRITICAL_ROW_HEIGHT + MODIFIER_ROW_HEIGHT - MODIFIER_PADDING_Y)
-				);
-				
-				//Draw subtype text
-				pen.setFont(MODIFIER_FONT);
-				pen.drawString
-				(
-						cardObj.types,
-						0 + px(0 + MODIFIER_PADDING_X),
-						0 + py(CRITICAL_ROW_HEIGHT + MODIFIER_ROW_HEIGHT - MODIFIER_PADDING_Y)
-				);
-				*/
 			}
 			
 			/**

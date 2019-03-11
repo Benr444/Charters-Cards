@@ -1,0 +1,184 @@
+{
+    "#id": "charters_cards",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "description": "A list of one or more Charter cards. For version Charters b2.0.X",
+    "title": "Charter Card(s)",
+    "type": "object",
+    "additionalProperties": false,
+    "definitions":
+    {
+        "ability-passive":
+        {
+            "description": "An ability or passive.",
+            "type": "object",
+            "additionalProperties": false,
+            "$id": "#ability-passive",
+            "properties":
+            {
+                "name": {"description": "The name of the ability/passive.", "type": "string"},
+                "isAbility": {"description": "True if the ability is a passive.", "type": "boolean"},
+                "types": {"description": "The Charters types and subtypes of this ability/passsive.", "type": "string"},
+                "cost":
+                {
+                    "$ref": "#/definitions/valueString"
+                },
+                "aspects":
+                {
+                    "description": "What aspects this ability/passive is.",
+                    "type": "array",
+                    "items":
+                    {
+                        "$ref": "#/definitions/aspectString"
+                    }
+                },
+                "modifiers":
+                {
+                    "description": "Additional costs, ranges, etc. Not required.",
+                    "type": "array",
+                    "items":
+                    {
+                    	"anyOf":
+                        [
+                        	{"description": "Regular text string inside a contents area.", "type": "string"},
+                        	{"$ref": "#/definitions/aspectString"},
+                        	{"$ref": "#/definitions/valueString"}
+                        ]
+                    }
+                },
+                "art":
+                {
+                    "description": "Additional information about the artwork for this ability/passive. Not required.",
+                    "type": "object",
+                    "properties":
+                    {
+                        "path": {"description": "The path to the art for this ability/passive.", "type": "string"},
+                        "dx": {"description": "The offset of the art in pixels the x-direction.", "type": "integer"},
+                        "dy": {"description": "The offset of the art in pixels the y-direction.", "type": "integer"}
+                    },
+                    "required": ["path"]
+                },
+                "contentsText":
+                {
+                    "description": "The text contents of ability/passive go here. Not required. The array can be composed of strings, which can be interrupted by special symbols such as [ASPECT] or <VALUE>.",
+                    "type": "array",
+                    "items":
+                    {
+                    	"anyOf":
+                        [
+                        	{"description": "Regular text string inside a contents area.", "type": "string"},
+                        	{"$ref": "#/definitions/aspectString"},
+                        	{"$ref": "#/definitions/valueString"}
+                        ]
+                    }
+                },
+                "contentsSubs":
+                {
+                    "description": "Any sub-abilities/passives go here. Not required to have any.",
+                    "type": "array",
+                    "items": {"$ref": "#/definitions/ability-passive"}
+                },
+                "extras":
+                {
+                    "description": "Some card types require additional, non-standard parts of abilities/passives, like HP, integrity, scales or speed.",
+                    "type": "object",
+                    "properties":
+                    {
+                        "speed": {"description": "Speed of this object. Must be greater than 0.", "type": "integer", "minimum": 1},
+                        "HP": {"description": "Starting HP of this object. Must be greater than 0.", "type": "integer", "minimum": 1},
+                        "maxHP": {"description": "Maximum HP of this object. Must be greater than 0.", "type": "integer", "minimum": 1},
+                        "integrity": {"description": "Integrity of this object. Must be greater than 0.", "type": "integer", "minimum": 1},
+                        "scale":
+                        {
+                            "description": "The scale this card has.",
+                            "type": "object",
+                            "properties":
+                            {
+                                "name": {"description": "The name of the scale.", "type": "string"},
+                                "values":
+                                {
+                                    "description": "The values of the scale. The first value is printed on the left side.",
+                                    "type": "array",
+                                    "minItems": 2,
+                                    "items":
+                                    {
+                                        "anyOf":
+                                        [
+                                            {"description": "Regular text string inside a contents area.", "type": "string"},
+                                            {"$ref": "#/definitions/aspectString"},
+                                            {"$ref": "#/definitions/valueString"}
+                                        ]
+                                    }
+                                },
+                                "startingValue": {"descriptions": "The starting value of this scale. This value must match one of the values defined in the values properties.", "type": "string"}
+                            }
+                        }
+                    },
+                    "required": []
+                }
+            },
+            "required": ["name", "isAbility"]
+        },
+        "valueString":
+        {
+        	"description": "A string representation of an value amount. Must appear as <X>."
+        	"type": "string",
+        	"#id": "#valueString",
+        	"additionalProperties": false
+        }
+        "aspectString":
+        {
+        	"description": "A string representation of an aspect."
+        	"type": "string",
+        	"#id": "#aspectString",
+        	"additionalProperties": false,
+        	"enum": ["AIR", "EARTH", "FIRE", "WATER", "ARCANE", "SACRED", "MARTIAL", "EXCHANGE", "CHAOS", "KNOWLEDGE"] 
+        }
+        "aspectSymbol":
+        {
+            "description": "This is an aspect symbol. It will render as a special icon instead of plain text.",
+            "type": "object",
+            "$id": "#aspectSymbol",
+            "additionalProperties": false,
+            "properties":
+            {
+                "aspect":
+                {
+                    "description": "Which aspect is desired to be rendered here.",
+                    "type": "string",
+                    "enum": ["AIR", "EARTH", "FIRE", "WATER", "ARCANE", "SACRED", "MARTIAL", "EXCHANGE", "CHAOS", "KNOWLEDGE"]
+                }
+            },
+            "required": ["aspect"]
+        },
+        "valueSymbol":
+        {
+            "description": "This is an value symbol. It will render as a special icon instead of plain text.",
+            "type": "object",
+            "$id": "#valueSymbol",
+            "additionalProperties": false,
+            "properties":
+            {
+                "value":
+                {
+                    "description": "The number to be rendered as the value here.",
+                    "type": "integer",
+                    "minimum": 0
+                }
+            },
+            "required": ["value"]
+        }
+    },
+    "properties":
+    {
+        "cards":
+        {
+            "description": "This is the array which contains all the card designs.",
+            "type": "array",
+            "items":
+            {
+                "$ref": "#/definitions/ability-passive"
+            }
+        }
+    },
+    "required": ["cards"]
+}

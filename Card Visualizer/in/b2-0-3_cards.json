@@ -1,0 +1,58 @@
+{
+    "cards":
+    [
+        {
+            "name": "Black Sol of Alchemy",
+            "isAbility": false,
+            "types": "Artifact Item",
+            "modifiers": ["R=2"],
+            "aspects": ["KNOWLEDGE", "EXCHANGE", "CHAOS"],
+            "contentsSubs":
+            [
+                {
+                    "name": "Transnihilation",
+                    "isAbility": true,
+                    "cost": "<9>",
+                    "modifiers": ["Discard, R=3"],
+                    "contentsText":
+                    [
+                        "Choose up to 4 different target items in inventories. Destroy those items. Gain ",
+                        "<X>",
+                        ", where X is the total value of items destroyed."
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Lumberpile",
+            "isAbility": false,
+            "types": "Resource Item",
+            "aspects": ["EARTH"],
+            "contentsSubs":
+            [
+                {
+                    "name": "Forest Allegiance",
+                    "isAbility": false,
+                    "contentsText":
+                    [
+                        "When this item is destroyed, gain ",
+                        "EARTH",
+                        " in your domain until your next end-of-turn."
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Charters Test Card",
+            "isAbility": true,
+            "cost": "<2>",
+            "types": "Location Building Improvement",
+            "modifiers": ["VP > 10"],
+            "aspects": ["KNOWLEDGE", "AIR", "CHAOS"],
+            "contentsText":
+            [
+                "Whenever you eat a pie, say mmm delicious and discard an item."
+            ]
+        }
+    ]       
+}
