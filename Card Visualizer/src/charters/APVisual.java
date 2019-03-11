@@ -48,17 +48,16 @@ public class APVisual
 			public static final double STROKE_WIDTH = 0.005;
 			public static final double SIDE_PAD = 0.1; //On either side of the AP, nothing can render here
 			//Critical Row
-			public static final double CRITICAL_HEIGHT = 0.15;
 			public static final double CRITICAL_GAP = 0.15;
 			public static final double CRITICAL_LIFT = 0.03; //The height from the bottom of the critical row to the text line
 			public static final int CRITICAL_FONT_SIZE = 25;
 			//Modifier Row
-			public static final double MODIFIER_HEIGHT = 0.10;
 			public static final double MODIFIER_GAP = 0.15;
 			public static final double MODIFIER_LIFT = 0.03; //The height from the bottom of the modifier row to the text line
 			public static final int MODIFIER_FONT_SIZE = 20;
 			//Contents Row
-			
+			public static final int CONTENTS_FONT_SIZE = 50;
+			public static final double ART_DIVISOR = 1 - 1/PHI;
 	//Variables/Fields
 		//Public
 		//Private
@@ -136,8 +135,8 @@ public class APVisual
 				 */
 				Font CRITICAL_FONT = new Font("Consolas", Font.PLAIN, CRITICAL_FONT_SIZE);
 				Font MODIFIER_FONT = new Font("Consolas", Font.PLAIN, MODIFIER_FONT_SIZE);
+				Font CONTENTS_FONT = new Font("Consolas", Font.PLAIN, CONTENTS_FONT_SIZE);
 				this.pen = new SVGGraphics2D(1000, 1000, SVGUnits.PX);
-				FontMetrics metrics = pen.getFontMetrics();
 				this.apWidth = MAX_AP_WIDTH;
 				this.apHeight = MAX_AP_HEIGHT;
 				BasicStroke bs = new BasicStroke(px(STROKE_WIDTH));
@@ -196,7 +195,7 @@ public class APVisual
 				}
 				
 				Area mainArea = new Area(mainRect);
-				pen.setFont(CRITICAL_FONT);
+				//pen.setFont(CRITICAL_FONT);
 				APRow criticalRow = new APRow();
 				criticalRow.setWidth(MAX_AP_WIDTH);
 				criticalRow.clip = (mainArea);
@@ -227,7 +226,7 @@ public class APVisual
 				}
 				int critHeight = criticalRow.draw(pen, 0, 0);
 				
-				pen.setFont(MODIFIER_FONT);
+				//pen.setFont(MODIFIER_FONT);
 				APRow modifierRow = new APRow();
 				modifierRow.setWidth(MAX_AP_WIDTH);
 				modifierRow.setLeftPad(SIDE_PAD);
@@ -258,8 +257,30 @@ public class APVisual
 					modifierRow.leftText.addAttribute(TextAttribute.BACKGROUND, Color.WHITE);
 					modifierRow.leftText.addAttribute(TextAttribute.FONT, MODIFIER_FONT);
 				}
-				modifierRow.draw(pen, 0, critHeight);
+				int modHeight = modifierRow.draw(pen, 0, critHeight);
 				
+				APRow contentsRow = new APRow();
+				//criticalRow.clip = (mainArea);
+				contentsRow.setWidth(MAX_AP_WIDTH);
+				contentsRow.setLeftPad(ART_DIVISOR);
+				contentsRow.setTopPad(0.05);
+				contentsRow.setRightPad(SIDE_PAD);
+				contentsRow.setBottomPad(0.05);
+				contentsRow.setGap(0);
+				String totalContents = "";
+				contentsRow.setMaxHeight(py(1) - critHeight - modHeight);
+				for (String c : cardObj.contentsText)
+				{
+					totalContents = totalContents + c;
+				}
+				if (totalContents != "")
+				{
+					contentsRow.rightText = new AttributedString(totalContents);
+					contentsRow.rightText.addAttribute(TextAttribute.FOREGROUND, Color.BLACK);
+					contentsRow.rightText.addAttribute(TextAttribute.BACKGROUND, Color.WHITE);
+					contentsRow.rightText.addAttribute(TextAttribute.FONT, CONTENTS_FONT);
+				}
+				contentsRow.draw(pen, 0, critHeight + modHeight);
 			}
 			
 			/**

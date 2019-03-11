@@ -27,7 +27,7 @@ public class Textangle
 {
 	public static void main(String... args)
 	{
-		final String PATH = "D:\\Code\\Charters Card Generator\\Java Card Visualizer\\Card Visualizer\\test.svg";
+		final String PATH = "test.svg";
 		SVGGraphics2D g = new SVGGraphics2D(1000, 1000, SVGUnits.PX);
 		g.setFont(new Font("Consolas", Font.PLAIN, 20));
 		g.setStroke(new BasicStroke(2));
@@ -65,6 +65,8 @@ public class Textangle
 	private int width;
 	/** If set, the height of the box will always be this. */
 	private Integer overrideHeight;
+	/** If set, the height cannot exceed this. */
+	private int maxHeight;
 	private AttributedString text;
 	/** Used to store the generated layouts */
 //-----------------------------------------------PUBLIC INTERFACE-----------------------------------------------//
@@ -87,6 +89,7 @@ public class Textangle
 		textColor = Color.BLACK;
 		strokeColor = Color.BLACK;
 		fillColor = Color.WHITE;
+		maxHeight = -1;
 	}
 	public void draw(int x, int y)
 	{
@@ -135,7 +138,8 @@ public class Textangle
 	public void setTopPad(double percent) {tPad = Math.abs(percent) - (int)Math.abs(percent);}
 	public void setBottomPad(double percent) {bPad = Math.abs(percent) - (int)Math.abs(percent);}
 	public void setWidth(int units) {width = Math.abs(units);};
-	public void setOverrideHeight(int units) {overrideHeight = Math.abs(units);};
+	public void setOverrideHeight(int units) {overrideHeight = Math.abs(units);}
+	public void setMaxHeight(int units) {maxHeight = units < 0 ? -1 : units;}
 	/** Returns the actual total height of the box */
 	public int height() 
 	{
@@ -151,7 +155,15 @@ public class Textangle
 			{
 				textHeight += t.getAscent() + t.getDescent() + t.getLeading();
 			}
-			return (int)((textHeight)/(1 - tPad - bPad));
+			int calculatedHeight = (int)((textHeight)/(1 - tPad - bPad));
+			if (maxHeight != -1)
+			{
+				return Math.min(calculatedHeight, maxHeight);
+			}
+			else
+			{
+				return calculatedHeight;
+			}
 		}
 	};
 //-----------------------------------------------PRIVATE METHODS-----------------------------------------------//

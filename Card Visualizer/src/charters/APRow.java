@@ -23,6 +23,8 @@ public class APRow
 	private double divisor;
 	/** The width is fixed in this version */
 	private int width; 
+	/** If set not to -1, the height cannot exceed this. */
+	private int maxHeight;
 //-----------------------------------------PUBLIC INTERFACE-------------------------------------//
 	/** The drawn row will clip inside this shape */
 	public Area clip;
@@ -38,6 +40,7 @@ public class APRow
 		this.rightColor = Color.BLACK;
 		this.fillColor = Color.WHITE;
 		this.strokeColor = Color.BLACK;
+		maxHeight = -1;
 	}
 	
 	/**
@@ -74,6 +77,7 @@ public class APRow
 			lTangle.setTopPad(tPad);
 			lTangle.setRightPad(gap/2);
 			lTangle.setBottomPad(bPad);
+			lTangle.setMaxHeight(maxHeight);
 		}
 		if (!emptyRight)
 		{
@@ -88,6 +92,9 @@ public class APRow
 			rTangle.setTopPad(tPad);
 			rTangle.setRightPad(rPad);
 			rTangle.setBottomPad(bPad);
+			System.out.println("maxHeight: ");
+			System.out.println("    " + maxHeight);
+			rTangle.setMaxHeight(maxHeight);
 		}
 		
 		if (!emptyLeft && emptyRight)
@@ -133,6 +140,7 @@ public class APRow
 	public void setDivisor(double percent) {divisor = Math.abs(percent) - (int)Math.abs(percent);}
 	public void setGap(double percent) {gap = Math.abs(percent) - (int)Math.abs(percent);}
 	public void setWidth(int units) {width = Math.abs(units);};
+	public void setMaxHeight(int units) {maxHeight = Math.abs(units);}
 	/** fx = fraction of x (width) */
 	//public double fx(double percentBig, int sizeBig) {return (sizeBig * percentBig)/width;}
 //-----------------------------------------PRIVATE FUNCTIONS-------------------------------------//	
