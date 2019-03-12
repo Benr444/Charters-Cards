@@ -79,12 +79,12 @@ public class Textangle
 	private int minHeight = -1;
 	/** The string that is rendered inside this box */
 	private AttributedString text;
+	/** The shape used to to clip the box and text before drawing it. 
+	 * Nothing will render outside this area */
+	private Area clip = null;
 //-----------------------------------------------PUBLIC INTERFACE-----------------------------------------------//
 	/** The colors that are used to stroke and fill this box */
 	public Color strokeColor = Color.BLACK, fillColor = Color.WHITE;
-	/** The shape used to to clip the box and text before drawing it. 
-	 * Nothing will render outside this area */
-	public Area clip = null;
 	/** Justification of text. true = left, false = right */
 	public boolean leftJustified = true;
 	/** Constructor */
@@ -113,23 +113,27 @@ public class Textangle
 			height()
 		));
 		if (clip != null) {rect.intersect(clip);};
+		if (maxHeight != -1)
+		{
+			//If there is a maxHeight specified, clip everything beyond it
+			Area maxBounding = new Area(new Rectangle2D.Double
+			(
+				bx, by, width, maxHeight
+			));
+			if (clip == null) {clip = maxBounding;}
+			else {clip.intersect(maxBounding);}
+			pen.setClip(clip);
+		}
+		print("Clip.x:" + clip.getBounds2D().getX());
+		print("Clip.y:" + clip.getBounds2D().getY());
+		print("Clip.w:" + clip.getBounds2D().getWidth());
+		print("Clip.h:" + clip.getBounds2D().getHeight());
 		pen.setPaint(fillColor);
 		pen.fill(rect);
 		ArrayList<TextLayout> layouts = generateLayouts(pen);
 		for (int i = 0; i < layouts.size(); i++)
 		{
 			TextLayout lay = layouts.get(i);
-			if (maxHeight != -1)
-			{
-				//If there is a maxHeight specified, clip everything beyond it
-				Area maxBounding = new Area(new Rectangle2D.Double
-				(
-					bx, by, width, maxHeight
-				));
-				if (clip == null) {clip = maxBounding;}
-				else {clip.intersect(maxBounding);}
-				pen.setClip(clip);
-			}
 			pen.setClip(clip);
 			int dy = (int)(py(tPad) + lay.getAscent() + i * (lay.getAscent() + lay.getDescent() + lay.getLeading()));
 			if (leftJustified)
@@ -152,6 +156,9 @@ public class Textangle
 	/** @return The fraction (%) of this height
 	 *  @param opy = the units to calculate the fraction for */
 	public double fy(int opy) {return (double)opy/(double)height();}
+	
+	/** Sets the clip. Uses the copy constructor to be safe */
+	public void setClip(Area a) {this.clip = (a != null) ? (Area)a.clone() : null;}
 	
 	/** @param percent = the % of this card that will serve as the left pad. Will be converted to be between 0 and +1. */
 	public void setLeftPad(double percent) {lPad = Math.abs(percent) - (int)Math.abs(percent);}
@@ -264,5 +271,5 @@ public class Textangle
 	}
 	
 	/** Helper method to print in a better format */
-	public void print(String s) {System.out.println("[Textangle] " + s);}
+	public static void print(Object o) {System.out.println("[Textangle] " + o);}
 }

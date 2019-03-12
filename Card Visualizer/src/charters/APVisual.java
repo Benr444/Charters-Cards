@@ -56,7 +56,7 @@ public class APVisual
 			public static final double MODIFIER_LIFT = 0.03; //The height from the bottom of the modifier row to the text line
 			public static final int MODIFIER_FONT_SIZE = 20;
 			//Contents Row
-			public static final int CONTENTS_FONT_SIZE = 50;
+			public static final int CONTENTS_FONT_SIZE = 20;
 			public static final double ART_DIVISOR = 1 - 1/PHI;
 	//Variables/Fields
 		//Public
@@ -94,10 +94,10 @@ public class APVisual
 					DirectoryStream<Path> files = Files.newDirectoryStream(inputFolder);
 					for (Path p : files)
 					{
-						System.out.println("File: " + p);
+						print("File: " + p);
 						if (p.getFileName().toString().endsWith(CARDS_EXTENSION))
 						{
-							System.out.println("Found design file: " + p.getFileName());
+							print("Found design file: " + p.getFileName());
 							String contents = new String(Files.readAllBytes(p));
 							
 							//For each of those files, create a CardObject
@@ -107,7 +107,7 @@ public class APVisual
 							for (CardObject co : cd.cards)
 							{
 								co.clean();
-								System.out.println(co);
+								print(co);
 								
 								APVisual cv = new APVisual(co, outputFolder, false);
 								cv.generate(Paths.get(OUTPUT_FOLDER));
@@ -198,7 +198,7 @@ public class APVisual
 				//pen.setFont(CRITICAL_FONT);
 				APRow criticalRow = new APRow();
 				criticalRow.setWidth(MAX_AP_WIDTH);
-				criticalRow.clip = (mainArea);
+				criticalRow.setClip(mainArea);
 				criticalRow.setLeftPad(SIDE_PAD);
 				criticalRow.setTopPad(0.1);
 				criticalRow.setRightPad(SIDE_PAD);
@@ -228,6 +228,7 @@ public class APVisual
 				
 				//pen.setFont(MODIFIER_FONT);
 				APRow modifierRow = new APRow();
+				modifierRow.setClip(mainArea);
 				modifierRow.setWidth(MAX_AP_WIDTH);
 				modifierRow.setLeftPad(SIDE_PAD);
 				modifierRow.setTopPad(0.05);
@@ -260,7 +261,7 @@ public class APVisual
 				int modHeight = modifierRow.draw(pen, 0, critHeight);
 				
 				APRow contentsRow = new APRow();
-				criticalRow.clip = (mainArea);
+				contentsRow.setClip(mainArea);
 				contentsRow.setWidth(MAX_AP_WIDTH);
 				contentsRow.setLeftPad(ART_DIVISOR);
 				contentsRow.setTopPad(0.05);
@@ -268,7 +269,7 @@ public class APVisual
 				contentsRow.setBottomPad(0.05);
 				contentsRow.setGap(0);
 				String totalContents = "";
-				contentsRow.setMaxHeight(py(1) - critHeight - modHeight);
+				contentsRow.setOverrideHeight(py(1) - critHeight - modHeight);
 				for (String c : cardObj.contentsText)
 				{
 					totalContents = totalContents + c;
@@ -302,9 +303,12 @@ public class APVisual
 				{
 					FileWriter fw = new FileWriter(fullOutputPath.toString());
 					fw.write(pen.getSVGElement());
-					System.out.println("> CardVisual saved to " + fullOutputPath);
+					print("> CardVisual saved to " + fullOutputPath);
 					fw.close();
 				} 
 				catch (IOException e) {e.printStackTrace();}
 			}
+			
+			/** Helper function for better printouts */
+			private static void print(Object o) {System.out.println("[APVisual] " + o);}
 }

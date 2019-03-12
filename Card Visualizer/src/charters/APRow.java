@@ -26,10 +26,12 @@ public class APRow
 	/** The width is fixed in this version */
 	private int width; 
 	/** If set not to -1, the height cannot exceed this. */
-	private int maxHeight;
-//-----------------------------------------PUBLIC INTERFACE-------------------------------------//
+	private int maxHeight = -1;
+	/** If set to > 0, the height cannot be below this. */
+	private int minHeight = -1;
 	/** The drawn row will clip inside this shape */
-	public Area clip;
+	private Area clip;
+//-----------------------------------------PUBLIC INTERFACE-------------------------------------//
 	public Color leftColor, rightColor, fillColor, strokeColor;
 	public AttributedString leftText, rightText;
 	public APRow()
@@ -53,12 +55,10 @@ public class APRow
 	 * @param y - position inside pen to draw at
 	 * @return - the height of the row
 	 */
-	public int draw(Graphics2D pen, int x, int y)
+	public int draw(Graphics2D pen, int bx, int by)
 	{
 		int returnHeight = 0;
-		System.out.println("Drawing APRow");
-		//Translate the pen to make it easier to draw
-		pen.translate(x, y);
+		print("Drawing APRow");
 		
 		boolean emptyLeft = isEmpty(leftText);
 		boolean emptyRight = isEmpty(rightText);
@@ -70,16 +70,17 @@ public class APRow
 		{
 			lTangle.fillColor = fillColor;
 			lTangle.strokeColor = strokeColor;
-			lTangle.clip = clip;
+			lTangle.setClip(clip);
 			lTangle.leftJustified = true;
 			int lWidth = px(divisor);
-			System.out.println("lWidth: " + lWidth);
+			print("lWidth: " + lWidth);
 			lTangle.setWidth(px(divisor));
 			lTangle.setLeftPad(lPad);
 			lTangle.setTopPad(tPad);
 			lTangle.setRightPad(gap/2);
 			lTangle.setBottomPad(bPad);
 			lTangle.setMaxHeight(maxHeight);
+			lTangle.setMinHeight(minHeight);
 		}
 		if (!emptyRight)
 		{
@@ -88,54 +89,53 @@ public class APRow
 			//{
 			//	rTangle.clip = clip.createTransformedArea(AffineTransform.getTranslateInstance(-px(divisor), 0));
 			//}
-			rTangle.clip = clip;
+			rTangle.setClip(clip);
 			rTangle.setWidth(px(1 - divisor));
 			rTangle.leftJustified = false;
 			rTangle.setLeftPad(gap/2);
 			rTangle.setTopPad(tPad);
 			rTangle.setRightPad(rPad);
 			rTangle.setBottomPad(bPad);
-			System.out.println("maxHeight: ");
-			System.out.println("    " + maxHeight);
+			print("maxHeight: ");
+			print("    " + maxHeight);
 			rTangle.setMaxHeight(maxHeight);
+			rTangle.setMinHeight(minHeight);
 		}
 		
 		if (!emptyLeft && emptyRight)
 		{
-			System.out.println("Left, Empty Right");
+			print("Left, Empty Right");
 			//lTangle takes up whole width
 			lTangle.setWidth(width);
 			lTangle.setRightPad(rPad);
-			lTangle.draw(0, 0);
+			lTangle.draw(bx, by);
 			returnHeight = lTangle.height();
 		}
 		else if (!emptyRight && emptyLeft)
 		{
-			System.out.println("Right, Empty Left");
+			print("Right, Empty Left");
 			//rTangle takes up whole width
 			rTangle.setWidth(width);
 			rTangle.setLeftPad(lPad);
-			rTangle.draw(0, 0);
+			rTangle.draw(bx, by);
 			returnHeight = rTangle.height();
 		}
 		else if (!emptyRight && !emptyLeft)
 		{
-			System.out.println("Left and right have contents");
+			print("Left and right have contents");
 			lTangle.setWidth(px(divisor));
 			rTangle.setWidth(px(1 - divisor));
 			int bigHeight = Math.max(lTangle.height(), rTangle.height());
 			lTangle.setOverrideHeight(bigHeight);
 			rTangle.setOverrideHeight(bigHeight);
-			lTangle.draw(0, 0);
-			rTangle.draw(px(divisor), 0);
+			lTangle.draw(bx, by);
+			rTangle.draw(bx + px(divisor), by);
 			returnHeight = bigHeight;
 		}
 		
-		//Un-translate the pen
-		pen.translate(-x, -y);
 		return returnHeight;
 	}
-	
+	public void setClip(Area a) {this.clip = (a != null) ? (Area)a.clone() : null;}
 	public void setLeftPad(double percent) {lPad = Math.abs(percent) - (int)Math.abs(percent);}
 	public void setRightPad(double percent) {rPad = Math.abs(percent) - (int)Math.abs(percent);}
 	public void setTopPad(double percent) {tPad = Math.abs(percent) - (int)Math.abs(percent);}
@@ -144,6 +144,8 @@ public class APRow
 	public void setGap(double percent) {gap = Math.abs(percent) - (int)Math.abs(percent);}
 	public void setWidth(int units) {width = Math.abs(units);};
 	public void setMaxHeight(int units) {maxHeight = Math.abs(units);}
+	public void setMinHeight(int units) {minHeight = Math.abs(units);}
+	public void setOverrideHeight(int units) {setMaxHeight(units); setMinHeight(units);}
 	/** fx = fraction of x (width) */
 	//public double fx(double percentBig, int sizeBig) {return (sizeBig * percentBig)/width;}
 //-----------------------------------------PRIVATE FUNCTIONS-------------------------------------//	
@@ -166,4 +168,6 @@ public class APRow
 			return contents.equals("");
 		}
 	}
+	/** Helper function for clean printing */
+	private static void print(Object o) {System.out.println("[APRow] " + o);}
 }
