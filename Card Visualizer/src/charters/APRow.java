@@ -7,6 +7,8 @@ import java.awt.geom.Area;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 
+import visual.Textangle;
+
 /**
  * A class that manages the drawing of a row of a charters ap.
  */
@@ -82,10 +84,11 @@ public class APRow
 		if (!emptyRight)
 		{
 			//Moves the clip over to the other side so that the rTangle gets clipped for the other corner
-			if (clip != null)
-			{
-				rTangle.clip = clip.createTransformedArea(AffineTransform.getTranslateInstance(-px(divisor), 0));
-			}
+			//if (clip != null)
+			//{
+			//	rTangle.clip = clip.createTransformedArea(AffineTransform.getTranslateInstance(-px(divisor), 0));
+			//}
+			rTangle.clip = clip;
 			rTangle.setWidth(px(1 - divisor));
 			rTangle.leftJustified = false;
 			rTangle.setLeftPad(gap/2);

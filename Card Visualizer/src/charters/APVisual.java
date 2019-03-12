@@ -136,9 +136,9 @@ public class APVisual
 				Font CRITICAL_FONT = new Font("Consolas", Font.PLAIN, CRITICAL_FONT_SIZE);
 				Font MODIFIER_FONT = new Font("Consolas", Font.PLAIN, MODIFIER_FONT_SIZE);
 				Font CONTENTS_FONT = new Font("Consolas", Font.PLAIN, CONTENTS_FONT_SIZE);
-				this.pen = new SVGGraphics2D(1000, 1000, SVGUnits.PX);
 				this.apWidth = MAX_AP_WIDTH;
 				this.apHeight = MAX_AP_HEIGHT;
+				this.pen = new SVGGraphics2D(px(1 + SHADOW_DX), py(1 + SHADOW_DY), SVGUnits.PX);
 				BasicStroke bs = new BasicStroke(px(STROKE_WIDTH));
 				pen.setStroke(bs);
 				
@@ -260,7 +260,7 @@ public class APVisual
 				int modHeight = modifierRow.draw(pen, 0, critHeight);
 				
 				APRow contentsRow = new APRow();
-				//criticalRow.clip = (mainArea);
+				criticalRow.clip = (mainArea);
 				contentsRow.setWidth(MAX_AP_WIDTH);
 				contentsRow.setLeftPad(ART_DIVISOR);
 				contentsRow.setTopPad(0.05);

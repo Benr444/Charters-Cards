@@ -1,4 +1,4 @@
-package charters;
+package visual;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -21,10 +21,12 @@ import org.jfree.graphics2d.svg.SVGUnits;
 
 /**
  * Class for a fixed-width rectangle that wraps text to fit inside it
+ * The class supports one AttributedString that it renders inside a rectangle
  * @author Benjamin
  */
 public class Textangle 
 {
+//-----------------------------------------------TEST ZONE-----------------------------------------------//
 	public static void main(String... args)
 	{
 		final String PATH = "test.svg";
@@ -37,10 +39,13 @@ public class Textangle
 			+ " Sphinx of black quartz, judge my vow."
 		);
 		t.addAttribute(TextAttribute.FONT, g.getFont());
-		//Ellipse2D.Double el = new Ellipse2D.Double(-50, -50, 500, 500);
+		t.addAttribute(TextAttribute.FOREGROUND, Color.BLACK);
+		Ellipse2D.Double el = new Ellipse2D.Double(-50, -50, 500, 500);
+		g.draw(el);
 		Textangle box = new Textangle(g, t);
-		//box.clip = new Area(el);
+		box.clip = new Area(el);
 		box.leftJustified = true;
+		box.setOverrideHeight(100);
 		box.setWidth(500);
 		box.setLeftPad(0.25);
 		box.setRightPad(0.25);
@@ -58,22 +63,31 @@ public class Textangle
 //-----------------------------------------------FIELDS-----------------------------------------------//
 	/** Go ahead and save the pen because the height of the textangle depends so heavily on it */
 	private Graphics2D pen;
+	/** % of width on the left of the box where text cannot be */
 	private double lPad;
+	/** % of height on the top of the box where text cannot be */
 	private double tPad;
+	/** % of width on the right of the box where text cannot be */
 	private double rPad;
+	/** % of height on the bottom of the box where text cannot be */
 	private double bPad;
+	/** Must be set by the user in this version. Total width of the box */
 	private int width;
 	/** If set, the height of the box will always be this. */
-	private Integer overrideHeight;
-	/** If set, the height cannot exceed this. */
-	private int maxHeight;
+	private int maxHeight = -1;
+	/** If set > 0, the height cannot be less than this. */
+	private int minHeight = -1;
+	/** The string that is rendered inside this box */
 	private AttributedString text;
-	/** Used to store the generated layouts */
 //-----------------------------------------------PUBLIC INTERFACE-----------------------------------------------//
-	public Color textColor, strokeColor, fillColor;
-	public Area clip;
-	/** Justification of text */
-	public boolean leftJustified;
+	/** The colors that are used to stroke and fill this box */
+	public Color strokeColor = Color.BLACK, fillColor = Color.WHITE;
+	/** The shape used to to clip the box and text before drawing it. 
+	 * Nothing will render outside this area */
+	public Area clip = null;
+	/** Justification of text. true = left, false = right */
+	public boolean leftJustified = true;
+	/** Constructor */
 	public Textangle(Graphics2D pen, AttributedString text)
 	{
 		this.pen = pen;
@@ -86,66 +100,90 @@ public class Textangle
 		{
 			this.text = text;
 		}
-		textColor = Color.BLACK;
-		strokeColor = Color.BLACK;
-		fillColor = Color.WHITE;
-		maxHeight = -1;
 	}
-	public void draw(int x, int y)
+	/** Draw the textangle at the specified coordinate */
+	public void draw(int bx, int by)
 	{
-		System.out.println("Drawing Textangle...");
-		//Translate the pen to the corner to make things easier
-		pen.translate(x, y);
-		System.out.println("Textangle Height: " + height());
-		System.out.println("Textangle Width: " + width);
+		print("Drawing...");
 		Area rect = new Area(new Rectangle2D.Double
 		(
-			0,
-			0,
+			bx,
+			by,
 			width,
 			height()
 		));
 		if (clip != null) {rect.intersect(clip);};
 		pen.setPaint(fillColor);
 		pen.fill(rect);
-		pen.setPaint(textColor);
 		ArrayList<TextLayout> layouts = generateLayouts(pen);
 		for (int i = 0; i < layouts.size(); i++)
 		{
 			TextLayout lay = layouts.get(i);
+			if (maxHeight != -1)
+			{
+				//If there is a maxHeight specified, clip everything beyond it
+				Area maxBounding = new Area(new Rectangle2D.Double
+				(
+					bx, by, width, maxHeight
+				));
+				if (clip == null) {clip = maxBounding;}
+				else {clip.intersect(maxBounding);}
+				pen.setClip(clip);
+			}
 			pen.setClip(clip);
 			int dy = (int)(py(tPad) + lay.getAscent() + i * (lay.getAscent() + lay.getDescent() + lay.getLeading()));
 			if (leftJustified)
 			{
-				System.out.println("Rendering a leftJust layout.");
-				lay.draw(pen, px(lPad), dy);
+				lay.draw(pen, bx + px(lPad), by + dy);
 			}
 			else
 			{
-				System.out.println("Rendering a rightJust layout.");
-				lay.draw(pen, px(1 - rPad) - (int)lay.getBounds().getWidth(), dy);
+				lay.draw(pen, bx + px(1 - rPad) - (int)lay.getBounds().getWidth(), by + dy);
 			}
 		}
 		pen.setPaint(strokeColor);
 		pen.draw(rect);
-		//Translate the pen back
-		pen.translate(-x, -y);
+		pen.setClip(null);
 	}
+	/** @return The fraction (%) of this width
+	 *  @param opx = the units to calculate the fraction for */
 	public double fx(int opx) {return (double)opx/(double)width;}
+	
+	/** @return The fraction (%) of this height
+	 *  @param opy = the units to calculate the fraction for */
 	public double fy(int opy) {return (double)opy/(double)height();}
+	
+	/** @param percent = the % of this card that will serve as the left pad. Will be converted to be between 0 and +1. */
 	public void setLeftPad(double percent) {lPad = Math.abs(percent) - (int)Math.abs(percent);}
+	
+	/** @param percent = the % of this card that will serve as the right pad. Will be converted to be between 0 and +1. */
 	public void setRightPad(double percent) {rPad = Math.abs(percent) - (int)Math.abs(percent);}
+	
+	/** @param percent = the % of this card that will serve as the top pad. Will be converted to be between 0 and +1. */
 	public void setTopPad(double percent) {tPad = Math.abs(percent) - (int)Math.abs(percent);}
+	
+	/** @param percent = the % of this card that will serve as the bottom pad. Will be converted to be between 0 and +1. */
 	public void setBottomPad(double percent) {bPad = Math.abs(percent) - (int)Math.abs(percent);}
+	
+	/** @param units = the new total width of this textangle */
 	public void setWidth(int units) {width = Math.abs(units);};
-	public void setOverrideHeight(int units) {overrideHeight = Math.abs(units);}
+
+	/** The height must be this value. Same as setting min = max = units */
+	public void setOverrideHeight(int units) {setMaxHeight(units); setMinHeight(units);}
+	
+	/** @param units = If set to less than 0, disables the maximum. If set to above 0, enables the maximum to that value */
 	public void setMaxHeight(int units) {maxHeight = units < 0 ? -1 : units;}
-	/** Returns the actual total height of the box */
+	
+	/** @param units = If set to less than 0, disables the minimum. If set to above 0, enables the minimum to that value */
+	public void setMinHeight(int units) {minHeight = units < 0 ? -1 : units;}
+	
+	/** @return The actual total height of the box, in units */
 	public int height() 
 	{
-		if (overrideHeight != null)
+		if (minHeight == maxHeight && minHeight != -1)
 		{
-			return overrideHeight;
+			//Utter override scenario
+			return minHeight;
 		}
 		else
 		{
@@ -156,20 +194,43 @@ public class Textangle
 				textHeight += t.getAscent() + t.getDescent() + t.getLeading();
 			}
 			int calculatedHeight = (int)((textHeight)/(1 - tPad - bPad));
-			if (maxHeight != -1)
+			if (maxHeight != -1) //max specified
 			{
-				return Math.min(calculatedHeight, maxHeight);
+				if (minHeight != -1) //min specified as well
+				{
+					print("min/max specified");
+					return Math.max(minHeight, Math.min(calculatedHeight, maxHeight));
+				}
+				else //only max specified
+				{
+					print("max specified");
+					return Math.min(calculatedHeight, maxHeight);
+				}
 			}
-			else
+			else 
 			{
-				return calculatedHeight;
+				if (minHeight != -1) //only min specified
+				{
+					print("min specified");
+					return Math.max(calculatedHeight, minHeight);
+				}
+				else //Neither specified
+				{
+					print("Neither min/max specified");
+					return calculatedHeight;
+				}
 			}
 		}
 	};
 //-----------------------------------------------PRIVATE METHODS-----------------------------------------------//
+	/** @return The pixels covered by the percentage of this box in the x-direction */
 	private int px(double percent) {return (int)Math.abs(width * percent);}
+	
+	/** @return The pixels covered by the percentage of this box in the y-direction */
 	private int py(double percent) {return (int)Math.abs(height() * percent);}
-	/** Used to update the layout lists */
+	
+	/** Subdivides the text into rows based on current width, etc parameters. 
+	 * @return The rows of text */
 	private ArrayList<TextLayout> generateLayouts(Graphics2D pen)
 	{
 		ArrayList<TextLayout> ret = new ArrayList<TextLayout>();
@@ -194,10 +255,14 @@ public class Textangle
 		}
 		return ret;
 	}
+	
 	/** Returns the width of the box available for text */
 	public int textWidth()
 	{
 		//Text width is the available space minus the pads
 		return (int)(width * (1 - lPad - rPad));
 	}
+	
+	/** Helper method to print in a better format */
+	public void print(String s) {System.out.println("[Textangle] " + s);}
 }
