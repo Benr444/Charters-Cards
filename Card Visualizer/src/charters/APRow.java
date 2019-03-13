@@ -89,6 +89,8 @@ public class APRow
 			//{
 			//	rTangle.clip = clip.createTransformedArea(AffineTransform.getTranslateInstance(-px(divisor), 0));
 			//}
+			rTangle.fillColor = fillColor;
+			rTangle.strokeColor = strokeColor;
 			rTangle.setClip(clip);
 			rTangle.setWidth(px(1 - divisor));
 			rTangle.leftJustified = false;
@@ -143,6 +145,12 @@ public class APRow
 		
 		return returnHeight;
 	}
+	
+	//public int rightTerminationHeight()
+	//{
+	//	return rTangle.terminationHeight();
+	//}
+	
 	public void setClip(Area a) {this.clip = (a != null) ? (Area)a.clone() : null;}
 	public void setLeftPad(double percent) {lPad = Math.abs(percent) - (int)Math.abs(percent);}
 	public void setRightPad(double percent) {rPad = Math.abs(percent) - (int)Math.abs(percent);}

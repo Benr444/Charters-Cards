@@ -198,6 +198,12 @@ public class Textangle
 	/** @param units = If set to less than 0, disables the minimum. If set to above 0, enables the minimum to that value */
 	public void setMinHeight(int units) {minHeight = units < 0 ? -1 : units;}
 	
+	/** @return The height from the bottom of the tPad to where the final row of text finishes */
+	public int terminationHeight()
+	{
+		return (int)(height() * tPad) + textHeight();
+	}
+	
 	/** @return The actual total height of the box, in units */
 	public int height() 
 	{
@@ -214,13 +220,7 @@ public class Textangle
 			}
 			else
 			{
-				int textHeight = 0;
-				ArrayList<TextLayout> layouts = generateLayouts(pen);
-				for (TextLayout t : layouts)
-				{
-					textHeight += t.getAscent() + t.getDescent() + t.getLeading();
-				}
-				int calculatedHeight = (int)((textHeight)/(1 - tPad - bPad));
+				int calculatedHeight = (int)((textHeight())/(1 - tPad - bPad));
 				if (maxHeight != -1) //max specified
 				{
 					if (minHeight != -1) //min specified as well
@@ -284,8 +284,20 @@ public class Textangle
 		return ret;
 	}
 	
+	/** Returns the vertical height taken up by the text */
+	private int textHeight()
+	{
+		int textHeight = 0;
+		ArrayList<TextLayout> layouts = generateLayouts(pen);
+		for (TextLayout t : layouts)
+		{
+			textHeight += t.getAscent() + t.getDescent() + t.getLeading();
+		}
+		return textHeight;
+	}
+	
 	/** Returns the width of the box available for text */
-	public int textWidth()
+	private int textWidth()
 	{
 		//Text width is the available space minus the pads
 		return (int)(width * (1 - lPad - rPad));

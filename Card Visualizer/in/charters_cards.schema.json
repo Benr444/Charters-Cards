@@ -15,6 +15,7 @@
             "$id": "#ability-passive",
             "properties":
             {
+            	"commentary": {"description": "Designer's commentary. Not rendered.", "type": "string"},
                 "name": {"description": "The name of the ability/passive.", "type": "string"},
                 "isAbility": {"description": "True if the ability is a passive.", "type": "boolean"},
                 "types": {"description": "The Charters types and subtypes of this ability/passsive.", "type": "string"},
@@ -120,19 +121,19 @@
         },
         "valueString":
         {
-        	"description": "A string representation of an value amount. Must appear as <X>."
+        	"description": "A string representation of an value amount. Must appear as <X>.",
         	"type": "string",
         	"#id": "#valueString",
         	"additionalProperties": false
-        }
+        },
         "aspectString":
         {
-        	"description": "A string representation of an aspect."
+        	"description": "A string representation of an aspect.",
         	"type": "string",
         	"#id": "#aspectString",
         	"additionalProperties": false,
         	"enum": ["AIR", "EARTH", "FIRE", "WATER", "ARCANE", "SACRED", "MARTIAL", "EXCHANGE", "CHAOS", "KNOWLEDGE"] 
-        }
+        },
         "aspectSymbol":
         {
             "description": "This is an aspect symbol. It will render as a special icon instead of plain text.",
