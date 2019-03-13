@@ -50,7 +50,7 @@ public class APVisual
 			//Critical Row
 			public static final double CRITICAL_GAP = 0.15;
 			public static final double CRITICAL_LIFT = 0.03; //The height from the bottom of the critical row to the text line
-			public static final int CRITICAL_FONT_SIZE = 25;
+			public static final int CRITICAL_FONT_SIZE = 20;
 			//Modifier Row
 			public static final double MODIFIER_GAP = 0.15;
 			public static final double MODIFIER_LIFT = 0.03; //The height from the bottom of the modifier row to the text line
@@ -70,7 +70,6 @@ public class APVisual
 			 */
 			private final int apWidth;
 			private final int apHeight;
-			private final boolean minMode;
 	//Functions/Methods
 		//Public
 			public int px(double percent)
@@ -109,7 +108,7 @@ public class APVisual
 								co.clean();
 								print(co);
 								
-								APVisual cv = new APVisual(co, outputFolder, false);
+								APVisual cv = new APVisual(co, false, 1);
 								cv.generate(Paths.get(OUTPUT_FOLDER));
 								//Export each CardVisual to the output folder
 							}
@@ -123,24 +122,30 @@ public class APVisual
 				}
 			}
 			
-			public APVisual(CardObject co, Path outputFolder, boolean minMode)
+			public APVisual(CardObject co, boolean minMode, double scaleFactor)
 			{
 				this.cardObj = co;
 				this.fileName = co.name.trim().toLowerCase().replace(" ", "_");
-				this.minMode = minMode;
+				this.apWidth = (int)(MAX_AP_WIDTH * scaleFactor);
+				this.apHeight = (int)(MAX_AP_HEIGHT * scaleFactor);
 				
 				/*
 				 * General graphics setup
 				 * Nothing will be drawn in this part of the class
 				 */
-				Font CRITICAL_FONT = new Font("Consolas", Font.PLAIN, CRITICAL_FONT_SIZE);
-				Font MODIFIER_FONT = new Font("Consolas", Font.PLAIN, MODIFIER_FONT_SIZE);
-				Font CONTENTS_FONT = new Font("Consolas", Font.PLAIN, CONTENTS_FONT_SIZE);
-				this.apWidth = MAX_AP_WIDTH;
-				this.apHeight = MAX_AP_HEIGHT;
+				Font CRITICAL_FONT = new Font("Consolas", Font.PLAIN, (int)(CRITICAL_FONT_SIZE * scaleFactor));
+				Font MODIFIER_FONT = new Font("Consolas", Font.PLAIN, (int)(MODIFIER_FONT_SIZE * scaleFactor));
+				Font CONTENTS_FONT = new Font("Consolas", Font.PLAIN, (int)(CONTENTS_FONT_SIZE * scaleFactor));
 				this.pen = new SVGGraphics2D(px(1 + SHADOW_DX), py(1 + SHADOW_DY), SVGUnits.PX);
 				BasicStroke bs = new BasicStroke(px(STROKE_WIDTH));
 				pen.setStroke(bs);
+				
+				ArrayList<APVisual> subAPList= new ArrayList<APVisual>();
+				for (CardObject c : cardObj.contentsSubs)
+				{
+					c.clean();
+					subAPList.add(new APVisual(c, true, 1 - ART_DIVISOR));
+				}
 				
 				Shape mainRect; //Used to bound the entire card (Not shadow)
 				
@@ -197,7 +202,7 @@ public class APVisual
 				Area mainArea = new Area(mainRect);
 				//pen.setFont(CRITICAL_FONT);
 				APRow criticalRow = new APRow();
-				criticalRow.setWidth(MAX_AP_WIDTH);
+				criticalRow.setWidth(px(1));
 				criticalRow.setClip(mainArea);
 				criticalRow.setLeftPad(SIDE_PAD);
 				criticalRow.setTopPad(0.1);
@@ -212,7 +217,8 @@ public class APVisual
 				}
 				if (cardObj.cost != null || aspectString != "")
 				{
-					criticalRow.rightText = new AttributedString(aspectString + cardObj.cost);
+					String tText = aspectString + ((cardObj.cost == null) ? "" : cardObj.cost);
+					criticalRow.rightText = new AttributedString(tText);
 					criticalRow.rightText.addAttribute(TextAttribute.FOREGROUND, Color.BLUE);
 					criticalRow.rightText.addAttribute(TextAttribute.BACKGROUND, Color.WHITE);
 					criticalRow.rightText.addAttribute(TextAttribute.FONT, CRITICAL_FONT);
@@ -229,7 +235,7 @@ public class APVisual
 				//pen.setFont(MODIFIER_FONT);
 				APRow modifierRow = new APRow();
 				modifierRow.setClip(mainArea);
-				modifierRow.setWidth(MAX_AP_WIDTH);
+				modifierRow.setWidth(px(1));
 				modifierRow.setLeftPad(SIDE_PAD);
 				modifierRow.setTopPad(0.05);
 				modifierRow.setRightPad(SIDE_PAD);
@@ -262,26 +268,31 @@ public class APVisual
 				
 				APRow contentsRow = new APRow();
 				contentsRow.setClip(mainArea);
-				contentsRow.setWidth(MAX_AP_WIDTH);
+				contentsRow.setWidth(px(1));
 				contentsRow.setLeftPad(ART_DIVISOR);
 				contentsRow.setTopPad(0.05);
 				contentsRow.setRightPad(SIDE_PAD);
 				contentsRow.setBottomPad(0.05);
 				contentsRow.setGap(0);
-				String totalContents = "";
 				contentsRow.setOverrideHeight(py(1) - critHeight - modHeight);
+				String totalContents = "";
 				for (String c : cardObj.contentsText)
 				{
 					totalContents = totalContents + c;
 				}
+				contentsRow.rightText = new AttributedString(totalContents);
 				if (totalContents != "")
 				{
-					contentsRow.rightText = new AttributedString(totalContents);
 					contentsRow.rightText.addAttribute(TextAttribute.FOREGROUND, Color.BLACK);
 					contentsRow.rightText.addAttribute(TextAttribute.BACKGROUND, Color.WHITE);
 					contentsRow.rightText.addAttribute(TextAttribute.FONT, CONTENTS_FONT);
 				}
 				contentsRow.draw(pen, 0, critHeight + modHeight);
+				
+				for (APVisual a : subAPList)
+				{
+					print(a.getSVGElement());
+				}
 			}
 			
 			/**
@@ -291,6 +302,12 @@ public class APVisual
 			{
 				//Save
 				this.save(outputFolder);
+			}
+			
+			/** Returns the SVG element */
+			public String getSVGElement()
+			{
+				return pen.getSVGElement();
 			}
 		
 		//Private

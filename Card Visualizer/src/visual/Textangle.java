@@ -12,6 +12,7 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.text.BreakIterator;
 import java.util.ArrayList;
@@ -92,14 +93,20 @@ public class Textangle
 	{
 		this.pen = pen;
 		this.leftJustified = true;
-		if (text == null)
+		if (text != null)
 		{
-			this.text = new AttributedString("");
+			AttributedCharacterIterator aci = text.getIterator();
+			String textContents = "";
+			while (aci.getIndex() < aci.getEndIndex())
+			{
+				textContents = textContents + aci.next();
+			}
+			if (textContents.equals(""))
+			{
+				this.text = null;
+			}
 		}
-		else
-		{
-			this.text = text;
-		}
+		this.text = text;
 	}
 	/** Draw the textangle at the specified coordinate */
 	public void draw(int bx, int by)
@@ -130,20 +137,27 @@ public class Textangle
 		print("Clip.h:" + clip.getBounds2D().getHeight());
 		pen.setPaint(fillColor);
 		pen.fill(rect);
-		ArrayList<TextLayout> layouts = generateLayouts(pen);
-		for (int i = 0; i < layouts.size(); i++)
+		if (text != null)
 		{
-			TextLayout lay = layouts.get(i);
-			pen.setClip(clip);
-			int dy = (int)(py(tPad) + lay.getAscent() + i * (lay.getAscent() + lay.getDescent() + lay.getLeading()));
-			if (leftJustified)
+			ArrayList<TextLayout> layouts = generateLayouts(pen);
+			for (int i = 0; i < layouts.size(); i++)
 			{
-				lay.draw(pen, bx + px(lPad), by + dy);
+				TextLayout lay = layouts.get(i);
+				pen.setClip(clip);
+				int dy = (int)(py(tPad) + lay.getAscent() + i * (lay.getAscent() + lay.getDescent() + lay.getLeading()));
+				if (leftJustified)
+				{
+					lay.draw(pen, bx + px(lPad), by + dy);
+				}
+				else
+				{
+					lay.draw(pen, bx + px(1 - rPad) - (int)lay.getBounds().getWidth(), by + dy);
+				}
 			}
-			else
-			{
-				lay.draw(pen, bx + px(1 - rPad) - (int)lay.getBounds().getWidth(), by + dy);
-			}
+		}
+		else
+		{
+			print("No text/null text was provided. Drawing bounding only.");
 		}
 		pen.setPaint(strokeColor);
 		pen.draw(rect);
@@ -187,44 +201,51 @@ public class Textangle
 	/** @return The actual total height of the box, in units */
 	public int height() 
 	{
-		if (minHeight == maxHeight && minHeight != -1)
+		if (this.text == null)
 		{
-			//Utter override scenario
-			return minHeight;
+			return minHeight < 0 ? 0 : minHeight;
 		}
 		else
 		{
-			int textHeight = 0;
-			ArrayList<TextLayout> layouts = generateLayouts(pen);
-			for (TextLayout t : layouts)
+			if (minHeight == maxHeight && minHeight != -1)
 			{
-				textHeight += t.getAscent() + t.getDescent() + t.getLeading();
+				//Utter override scenario
+				return minHeight;
 			}
-			int calculatedHeight = (int)((textHeight)/(1 - tPad - bPad));
-			if (maxHeight != -1) //max specified
+			else
 			{
-				if (minHeight != -1) //min specified as well
+				int textHeight = 0;
+				ArrayList<TextLayout> layouts = generateLayouts(pen);
+				for (TextLayout t : layouts)
 				{
-					print("min/max specified");
-					return Math.max(minHeight, Math.min(calculatedHeight, maxHeight));
+					textHeight += t.getAscent() + t.getDescent() + t.getLeading();
 				}
-				else //only max specified
+				int calculatedHeight = (int)((textHeight)/(1 - tPad - bPad));
+				if (maxHeight != -1) //max specified
 				{
-					print("max specified");
-					return Math.min(calculatedHeight, maxHeight);
+					if (minHeight != -1) //min specified as well
+					{
+						print("min/max specified");
+						return Math.max(minHeight, Math.min(calculatedHeight, maxHeight));
+					}
+					else //only max specified
+					{
+						print("max specified");
+						return Math.min(calculatedHeight, maxHeight);
+					}
 				}
-			}
-			else 
-			{
-				if (minHeight != -1) //only min specified
+				else 
 				{
-					print("min specified");
-					return Math.max(calculatedHeight, minHeight);
-				}
-				else //Neither specified
-				{
-					print("Neither min/max specified");
-					return calculatedHeight;
+					if (minHeight != -1) //only min specified
+					{
+						print("min specified");
+						return Math.max(calculatedHeight, minHeight);
+					}
+					else //Neither specified
+					{
+						print("Neither min/max specified");
+						return calculatedHeight;
+					}
 				}
 			}
 		}

@@ -66,7 +66,7 @@ public class APRow
 		Textangle lTangle = new Textangle(pen, leftText);
 		Textangle rTangle = new Textangle(pen, rightText);
 		
-		if (!emptyLeft)
+		if (!emptyLeft || (emptyLeft && emptyRight))
 		{
 			lTangle.fillColor = fillColor;
 			lTangle.strokeColor = strokeColor;
@@ -131,6 +131,14 @@ public class APRow
 			lTangle.draw(bx, by);
 			rTangle.draw(bx + px(divisor), by);
 			returnHeight = bigHeight;
+		}
+		else
+		{
+			//Both empty
+			lTangle.setWidth(width);
+			lTangle.setRightPad(rPad);
+			lTangle.draw(bx, by);
+			return lTangle.height();
 		}
 		
 		return returnHeight;
